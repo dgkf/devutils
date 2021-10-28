@@ -89,7 +89,8 @@ triple_colon.devutils_suggested_package <- `[[.devutils_suggested_package`
 #' @export
 suggested_fallback <- function(x, ...) {
   xcall <- substitute(x)
-  if (inherits(xcall, "call") && xcall[[1L]] == "::") {
+  if (inherits(xcall, "call") &&
+      (xcall[[1L]] == "::" || xcall[[1L]] == "$" || xcall[[1L]] == "[[")) {
     pkgname <- as.character(xcall[[2L]])
     pkgobj  <- as.character(xcall[[3L]])
     val <- ..1

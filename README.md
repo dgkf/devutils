@@ -1,0 +1,162 @@
+# `devutils`
+
+Utilities for common package development patterns
+
+##### options
+
+- Managing internal package options, defaulting to global options or environment
+  variables
+- Provides helpers for parsing environment variable strings into more convenient
+  R objects.
+- Automated package option documentation
+- Provides helpers for creating a stub function with parameters corresponding to
+  each option, such that parameter definitions can be easily inherited. Helpful
+  for globally configurable behaviors that also are used to set frequent
+  parameter defaults, such as `quiet` or `verbose`. 
+
+##### suggests
+
+- Transparent class for suggested packages
+- Provide fallback functions for when a suggested package isn't available
+
+## Examples
+
+### Defining options
+
+```r
+define_pkgoptions(
+  "This is an example of how a package author would document their internally",
+  "used options. This option could make the package default to executing",
+  "quietly."
+  quiet = TRUE
+
+  "Multiple options can be defined, providing default values if a global",
+  "option or environment variable isn't set."
+  second_example = FALSE
+
+  "Default values are lazily evaluated, so you are free to use package",
+  "functions without worrying about build-time evaluation order"
+  lazy_example = fn_not_defined_until_later()
+)
+
+define_pkgoption(
+  "concrete_example",
+  desc = paste0(
+    "Or, if you prefer a more concrete constructor you can define each option ",
+    "explicitly."),
+  option_name = "mypackage_concrete", # define custom option names
+  envvar_name = "MYPACKAGE_CONCRETE", # and custom environment variable names
+  envvar_fn = pkgoption_fn_is_true()  # and use helpers to handle envvar parsing
+)
+```
+
+### Creating option Rd documentation
+
+```r
+#' @eval pkgutils::roxygenize_pkgoptions()
+NULL
+```
+
+### Reusing option documentation for parameters
+
+```r
+#' @eval pkgutils::roxygenize_pkgoption_params()
+mypackage_option_params <- NULL
+
+#' Example Function
+#'
+#' @inheritParams mypackage_option_params
+#'
+count_to_three <- function(quiet = pkgoption("quiet")) {
+  for (i in 1:3) cat(i, "\n")
+}
+```
+
+### Throw error when suggested package is unavailable
+
+By default, suggested packages are loaded as a new object. Functions from the
+suggested package are accessed by `$` or `[[`.
+
+```r
+#' @import devutils
+missingpackage <- suggested("missingpackage")
+
+#' @export
+count_to_three <- function() {
+  missingpackage$do_thing()
+}
+```
+
+```sh
+R> library(mypackage)
+R> count_to_three()
+Error: This feature is unavailable because package 'missingpackage' is not installed.
+```
+
+> It can be inconvenient to manage the overhead of remembering which packages
+> are suggested (using `$` and imported `::`). You can call
+> `permit_mutation("all")` to give `devutils` permission to modify your package
+> namespace, masking `::` and `:::` with versions that allow for suggested
+> packages to be automatically handled.  
+>
+> Masking base operators, especially for something as foundational as package
+> namespace interaction could be error-prone. For now this behavior is only for
+> testing purposes.
+
+### Define a fallback behavior when a suggested package is unavailable
+
+Sometimes, a suggested package is convenient because it produces nicer output
+than something you care to write yourself, but you can still hack something
+sufficient together when the suggested package isn't available. In this
+scenario, you can provide a fallback to that function. Errors will still be
+raised if other functions are used, but the fallback will be used when only that
+function is needed.
+
+```r
+#' @import devutils
+missingpackage <- suggested("missingpackage")
+
+suggested_fallback(
+  missingpackage$do_thing,
+  function() for(i in 1:3) cat(i, "\n")
+)
+
+#' @export
+count_to_three <- function() {
+  missingpackage$do_thing()
+  missingpackage$do_other_thing()
+}
+```
+
+```sh
+R> library(mypackage)
+R> count_to_three()
+1
+2
+3
+Error: This feature is unavailable because package 'missingpackage' is not installed.
+```
+
+### A drop-in replacement for dependencies (experimental)
+
+If you're feeling adventurous, you can give `devutils` added privileges to mask
+some base functions in your package namespace, allowing you to flag a package as
+suggested, allowing you to directly reuse existing namespaced package objects.
+
+This features is very experimental, and mucking with the base namespace is not
+something that should be done carelessly. For now, this feature is only
+recommended for testing.
+
+```r
+#' @import devutils
+devutils::permit_mutation("all")
+
+suggested("utils")  # modified in-place; now `utils` is a suggested package object
+
+#' @export
+count_to_three <- function() {
+  for (i in utils::head(1:5, 3L)) cat(i, "\n")
+}
+```
+
+
