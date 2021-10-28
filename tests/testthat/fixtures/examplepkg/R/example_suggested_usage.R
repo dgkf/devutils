@@ -1,5 +1,5 @@
-#' @import pkgutils
-pkgutils::permit_mutation()
+#' @import devutils
+devutils::permit_mutation("all")
 
 suggested("utils")
 suggested("not.a.real.package")
