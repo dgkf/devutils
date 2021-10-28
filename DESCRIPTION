@@ -1,0 +1,19 @@
+Package: devutils
+Title: Utilities for common package development patterns.
+Version: 0.0.0.9000
+Authors@R: 
+    person("Doug", "Kelkhoff", , "doug.kelkhoff@gmail.com", role = c("aut", "cre"))
+Description:
+    Package developers frequently need to reengineer common package behaviors,
+    many of which can be reused and standardized to make the package ecosystem
+    more consistent. These tools serve to package those tools and patterns such
+    that they can be more easily embedded in other packages.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests:
+    cli,
+    roxygen2,
+    testthat
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2

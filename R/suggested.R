@@ -1,0 +1,104 @@
+#' Import a package as a Suggests dependency
+#'
+#' Creates an object in the current environment with the same name as the
+#' package, which can be used just like a package to access its namespace,
+#' throwing an error if the package is not installed.
+#'
+#' @param pkgname A \code{character} package name to import as a "Suggests"
+#'   dependency
+#' @param pkgversion A \code{character} vector of package version
+#'   specifications, as they would be specified in \code{DESCRIPTION} (for
+#'   example, \code{">= 1.2.3"}).
+#' @param unavailable_msg A \code{character} string to display if the suggested
+#'   package dependency is not available.
+#' @param env A \code{environment} in which the suggested package object should
+#'   be assigned. By default, an object of the same name as the package is
+#'   created in the parent environment.
+#'
+#' @export
+suggested <- function(pkgname, pkgversion = "", unavailable_msg = NULL,
+  env = parent.frame()) {
+
+  if (is.null(unavailable_msg)) {
+    unavailable_msg <- sprintf(
+      "This feature is unavailable because package '%s' is not installed.",
+      pkgname
+    )
+  }
+
+  suggested_pkg_obj <- structure(
+    new.env(parent = emptyenv()),
+    pkg = pkgname,
+    ver = pkgversion,
+    msg = unavailable_msg,
+    class = "devutils_suggested_package"
+  )
+
+  if (permits_mutation(env)) {
+    assign(pkgname, suggested_pkg_obj, env)
+  }
+
+  invisible(suggested_pkg_obj)
+}
+
+#' @export
+`$.devutils_suggested_package` <- function(x, name) {
+  `[[`(x, as.character(name))
+}
+
+#' @export
+`[[.devutils_suggested_package` <- function(x, name, ...) {
+  nsobj <- ".__NAMESPACE__."
+  load_attempted <- nsobj %in% names(x)
+  load_successful <- load_attempted && !is.null(get(nsobj, x, inherit = FALSE))
+
+  # if namespace is loaded, return value
+  if (name %in% names(x) && load_attempted)
+    return(get(name, envir = x, inherits = FALSE))
+
+  pkg <- attr(x, "pkg")
+  msg <- attr(x, "msg")
+
+  # terminate if namespace is loaded and the function does not exist
+  if (length(x) && load_successful)
+    stop(sprintf("Suggested package '%s' does not export '%s'", pkg, name))
+
+  # if not loaded, check if required package is available
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    if (!load_attempted) {
+      assign(nsobj, NULL, x)
+      return(x[[name]])
+    }
+
+    stop(call. = FALSE, msg)
+  }
+
+  ns <- loadNamespace(pkg)
+  for (n in names(ns)) x[[n]] <- ns[[n]]
+  x[[name]]
+}
+
+#' @export
+double_colon.devutils_suggested_package <- `[[.devutils_suggested_package`
+
+#' @export
+triple_colon.devutils_suggested_package <- `[[.devutils_suggested_package`
+
+
+
+#' @export
+suggested_fallback <- function(x, ...) {
+  xcall <- substitute(x)
+  if (inherits(xcall, "call") && xcall[[1L]] == "::") {
+    pkgname <- as.character(xcall[[2L]])
+    pkgobj  <- as.character(xcall[[3L]])
+    val <- ..1
+  } else {
+    pkgname <- x
+    pkgobj <- ..1
+    val <- ..2
+  }
+
+  env <- get0(pkgname, parent.frame())
+  assign(pkgobj, val, env)
+}
