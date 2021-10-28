@@ -65,7 +65,7 @@ variables or the provided default value.
 
 ### Creating option Rd documentation
 
-As long as the above `.devutils` environment has been created, documenting your
+As long as the options have been created as shown above, documenting your
 options is as easy as adding this small roxygen stub within your package.
 
 ```r
@@ -193,7 +193,7 @@ Error: This feature is unavailable because package 'missingpackage' is not insta
 
 If you're feeling adventurous, you can give `devutils` added privileges to mask
 some base functions in your package namespace, allowing you to flag a package as
-suggested while directly reuse existing namespaced package objects (accessed via
+suggested while directly reuseing existing namespaced package objects (accessed via
 `::` or `:::`).
 
 This features is very experimental, and mucking with the base namespace is not
