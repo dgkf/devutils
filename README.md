@@ -57,6 +57,35 @@ define_pkgoption(
 NULL
 ```
 
+Produces `?mypackage_options`
+
+```
+mypackage Options
+
+Description:
+
+     Internally used, package-specific options. All options will
+     prioritize R options() values, and fall back to environment
+     variables if undefined. If neither the option nor the environment
+     variable is set, a default value is used.
+
+Options:
+
+     quiet
+          This is an example of how a package author would document their
+          internally used options. This option could make the package default to
+          executing quietly.
+
+          default:
+
+              TRUE
+
+          option: mypackage.quiet
+
+          envvar: R_MYPACKAGE_QUIET (raw)
+...
+```
+
 ### Reusing option documentation for parameters
 
 ```r

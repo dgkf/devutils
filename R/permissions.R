@@ -83,6 +83,7 @@ permit_mutation_all <- function(env = parent.frame()) {
   # inject masked `::` and `:::` operators
   assign("::", `::`, env)
   assign(":::", `::`, env)
+
   invisible(devutilsenv)
 }
 
