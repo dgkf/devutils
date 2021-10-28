@@ -45,12 +45,14 @@ roxygenize_pkgoptions <- function(
 }
 
 #' @export
-roxygenize_pkgoptions_params <- function(which = names(env),
-  env = parent.frame()) {
-
+roxygenize_pkgoptions_params <- function(opts = NULL, env = parent.frame()) {
   pkgoptdeets <- "..pkgoption_details.."
   optenv <- get_pkgoptions(env)
   details <- optenv[[pkgoptdeets]]
+
+  if (is.null(opts)) {
+    opts <- setdiff(names(optenv), pkgoptdeets)
+  }
 
   format_param <- function(n) {
     default <- paste0(
@@ -72,6 +74,6 @@ roxygenize_pkgoptions_params <- function(which = names(env),
 
   c(
     "@title Generated Package Option Parameters",
-    vapply(setdiff(which, pkgoptdeets), format_param, character(1L))
+    vapply(opts, format_param, character(1L))
   )
 }

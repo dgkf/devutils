@@ -3,17 +3,17 @@ pkgname <- function(env = parent.frame(2L)) {
 }
 
 get_pkgoptions <- function(env = parent.frame(2L)) {
-  pkgutilsenv <- get_devutils(env)
-  if (!exists("options", pkgutilsenv)) {
+  devutilsenv <- get_devutils(env)
+  if (!exists("options", devutilsenv)) {
     optenv <- structure(
       new.env(parent = emptyenv()),
-      class = "pkgutils_options_env"
+      class = "devutils_options_env"
     )
 
-    assign("options", optenv, pkgutilsenv)
+    assign("options", optenv, devutilsenv)
   }
 
-  get("options", pkgutilsenv, inherit = FALSE)
+  get("options", devutilsenv, inherit = FALSE)
 }
 
 new_pkgoption_details <- function(
@@ -101,8 +101,8 @@ pkgoption <- function(x, default = NULL, env = parent.frame()) {
   opt_default_unset <- !(x %in% names(optenv))
   if (opt_default_unset) return(default)
 
-  substitute_expr <- bquote(substitute(.(as.symbol(x)), .pkgutils_options))
-  opt_default_unset <- nchar(eval(substitute_expr, parent.frame())) == 0L
+  substitute_expr <- bquote(substitute(.(as.symbol(x))))
+  opt_default_unset <- nchar(eval(substitute_expr, optenv)) == 0L
   if (opt_default_unset) return(default)
 
   optenv[[x]]

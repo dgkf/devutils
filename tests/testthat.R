@@ -1,4 +1,4 @@
 library(testthat)
-library(pkgutils)
+library(devutils)
 
-test_check("pkgutils")
+test_check("devutils")
