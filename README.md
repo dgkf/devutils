@@ -120,7 +120,7 @@ mypackage_option_params <- NULL
 #' @inheritParams mypackage_option_params
 #'
 count_to_three <- function(quiet = pkgoption("quiet")) {
-  for (i in 1:3) cat(i, "\n")
+  for (i in 1:3) if (!quiet) cat(i, "\n")
 }
 ```
 
