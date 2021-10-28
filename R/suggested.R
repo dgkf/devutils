@@ -42,31 +42,46 @@ suggested <- function(pkgname, pkgversion = "", unavailable_msg = NULL,
 }
 
 #' @export
+available <- function(pkg, env = parent.frame()) {
+  pkgname <- as.character(substitute(pkg))
+  if (exists(pkgname, env) && inherits(pkg, "devutils_suggested_package")) {
+    return(suggested_loaded(pkg))
+  } else {
+    return(!inherits(try(find.package(pkgname), silent = TRUE), "try-error"))
+  }
+}
+
+suggested_loaded <- function(pkg) {
+  ns <- get0(".__NAMESPACE__.", pkg, inherits = FALSE, ifnotfound = list())
+  !is.null(ns$path)
+}
+
+suggested_load_attempted <- function(pkg) {
+  exists(".__NAMESPACE__.", pkg, inherits = FALSE)
+}
+
+#' @export
 `$.devutils_suggested_package` <- function(x, name) {
   `[[`(x, as.character(name))
 }
 
 #' @export
 `[[.devutils_suggested_package` <- function(x, name, ...) {
-  nsobj <- ".__NAMESPACE__."
-  load_attempted <- nsobj %in% names(x)
-  load_successful <- load_attempted && !is.null(get(nsobj, x, inherit = FALSE))
-
   # if namespace is loaded, return value
-  if (name %in% names(x) && load_attempted)
+  if (name %in% names(x) && suggested_load_attempted(x))
     return(get(name, envir = x, inherits = FALSE))
 
   pkg <- attr(x, "pkg")
   msg <- attr(x, "msg")
 
-  # terminate if namespace is loaded and the function does not exist
-  if (length(x) && load_successful)
+  # terminate if namespace is loaded, but the function does not exist
+  if (length(x) && suggested_loaded(x))
     stop(sprintf("Suggested package '%s' does not export '%s'", pkg, name))
 
   # if not loaded, check if required package is available
   if (!requireNamespace(pkg, quietly = TRUE)) {
-    if (!load_attempted) {
-      assign(nsobj, NULL, x)
+    if (!suggested_load_attempted(x)) {
+      assign(".__NAMESPACE__.", NULL, x)
       return(x[[name]])
     }
 

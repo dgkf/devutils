@@ -23,6 +23,15 @@ Utilities for common package development patterns
 
 ### Defining options
 
+Options are maintained in a hidden namespace variable called `.devutils`. By
+calling the `define_pkgoption(s)` functions, you are updating that environment
+to include definitions for your options, storing their defaults, descriptions,
+and related option and environment variable names.
+
+`define_pkgoptions` provides a convenient shorthand for defining many options
+quickly, whereas `define_pkgoption` is a bit more rigid about its inputs, but
+gives you more flexibility to customize the option behavior.
+
 ```r
 define_pkgoptions(
   "This is an example of how a package author would document their internally",
@@ -50,7 +59,14 @@ define_pkgoption(
 )
 ```
 
+Once these are defined, you can use `pkgoption()` within your package to
+retrieve values, implicitly sourcing values from global options, environment
+variables or the provided default value.
+
 ### Creating option Rd documentation
+
+As long as the above `.devutils` environment has been created, documenting your
+options is as easy as adding this small roxygen stub within your package.
 
 ```r
 #' @eval devutils::roxygenize_pkgoptions()
@@ -87,6 +103,13 @@ Options:
 ```
 
 ### Reusing option documentation for parameters
+
+In some cases, options are frequently used as default values for function
+parameters. In these cases, you might find that you're repeating yourself trying
+to document all the environment settings that might affect both the parameter
+and option. Instead, you can create a function stub from which you can inherit
+parameters in order to reuse the same option definitions as parameter
+definitions.
 
 ```r
 #' @eval devutils::roxygenize_pkgoption_params()
@@ -170,7 +193,8 @@ Error: This feature is unavailable because package 'missingpackage' is not insta
 
 If you're feeling adventurous, you can give `devutils` added privileges to mask
 some base functions in your package namespace, allowing you to flag a package as
-suggested, allowing you to directly reuse existing namespaced package objects.
+suggested while directly reuse existing namespaced package objects (accessed via
+`::` or `:::`).
 
 This features is very experimental, and mucking with the base namespace is not
 something that should be done carelessly. For now, this feature is only
