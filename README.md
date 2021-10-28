@@ -53,14 +53,14 @@ define_pkgoption(
 ### Creating option Rd documentation
 
 ```r
-#' @eval pkgutils::roxygenize_pkgoptions()
+#' @eval devutils::roxygenize_pkgoptions()
 NULL
 ```
 
 ### Reusing option documentation for parameters
 
 ```r
-#' @eval pkgutils::roxygenize_pkgoption_params()
+#' @eval devutils::roxygenize_pkgoption_params()
 mypackage_option_params <- NULL
 
 #' Example Function

@@ -1,10 +1,10 @@
-#' @eval pkgutils::roxygenize_pkgoptions()
+#' @eval devutils::roxygenize_pkgoptions()
 NULL
 
-#' @eval pkgutils::roxygenize_pkgoptions_params()
+#' @eval devutils::roxygenize_pkgoptions_params()
 pkgoption_params <- NULL
 
-#' @import pkgutils
+#' @import devutils
 define_pkgoptions(
   "This is a test value, showing how an option can be defined for a package.",
   test = "default value",
