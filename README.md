@@ -19,6 +19,10 @@ Utilities for common package development patterns
 - Transparent class for suggested packages
 - Provide fallback functions for when a suggested package isn't available
 
+##### common infix operators
+
+- `%||%` "if-not-null-else" and `%?%` "if-not-error-else" infix operators
+
 ## Examples
 
 ### Defining options
