@@ -7,7 +7,7 @@
 suggested(
   pkgname,
   pkgversion = "",
-  unavailable_msg = NULL,
+  unavailable_callback = suggested_callback_error,
   env = parent.frame()
 )
 }
@@ -19,8 +19,8 @@ dependency}
 specifications, as they would be specified in \code{DESCRIPTION} (for
 example, \code{">= 1.2.3"}).}
 
-\item{unavailable_msg}{A \code{character} string to display if the suggested
-package dependency is not available.}
+\item{unavailable_callback}{A \code{function} to be called when the suggested
+package is meant to be used, but unavailable.}
 
 \item{env}{A \code{environment} in which the suggested package object should
 be assigned. By default, an object of the same name as the package is

@@ -9,28 +9,22 @@
 #' @param pkgversion A \code{character} vector of package version
 #'   specifications, as they would be specified in \code{DESCRIPTION} (for
 #'   example, \code{">= 1.2.3"}).
-#' @param unavailable_msg A \code{character} string to display if the suggested
-#'   package dependency is not available.
+#' @param unavailable_callback A \code{function} to be called when the suggested
+#'   package is meant to be used, but unavailable.
 #' @param env A \code{environment} in which the suggested package object should
 #'   be assigned. By default, an object of the same name as the package is
 #'   created in the parent environment.
 #'
 #' @export
-suggested <- function(pkgname, pkgversion = "", unavailable_msg = NULL,
+suggested <- function(pkgname, pkgversion = "",
+  unavailable_callback = suggested_callback_error,
   env = parent.frame()) {
-
-  if (is.null(unavailable_msg)) {
-    unavailable_msg <- sprintf(
-      "This feature is unavailable because package '%s' is not installed.",
-      pkgname
-    )
-  }
 
   suggested_pkg_obj <- structure(
     new.env(parent = emptyenv()),
     pkg = pkgname,
     ver = pkgversion,
-    msg = unavailable_msg,
+    callback = unavailable_callback,
     class = "devutils_suggested_package"
   )
 
@@ -60,6 +54,7 @@ suggested_load_attempted <- function(pkg) {
   exists(".__NAMESPACE__.", pkg, inherits = FALSE)
 }
 
+
 #' @export
 `$.devutils_suggested_package` <- function(x, name) {
   `[[`(x, as.character(name))
@@ -72,7 +67,7 @@ suggested_load_attempted <- function(pkg) {
     return(get(name, envir = x, inherits = FALSE))
 
   pkg <- attr(x, "pkg")
-  msg <- attr(x, "msg")
+  callback <- attr(x, "callback")
 
   # terminate if namespace is loaded, but the function does not exist
   if (length(x) && suggested_loaded(x))
@@ -85,7 +80,7 @@ suggested_load_attempted <- function(pkg) {
       return(x[[name]])
     }
 
-    stop(call. = FALSE, msg)
+    callback(pkg)
   }
 
   ns <- loadNamespace(pkg)
