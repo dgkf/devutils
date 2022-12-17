@@ -1,3 +1,5 @@
+### 🚧 This package is being split into [`options`](https://github.com/dgkf/options) and [`suggests`](https://github.com/dgkf/suggests) 🚧
+
 # `devutils`
 
 Utilities for common package development patterns
